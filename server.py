@@ -1,12 +1,10 @@
 import os
 import random
-
+import json 
 import cherrypy
+from utils import * 
 
-"""
-This is a simple Battlesnake server written in Python.
-For instructions see https://github.com/BattlesnakeOfficial/starter-snake-python/README.md
-"""
+
 
 
 class Battlesnake(object):
@@ -18,9 +16,9 @@ class Battlesnake(object):
         # TIP: If you open your Battlesnake URL in browser you should see this data
         return {
             "apiversion": "1",
-            "author": "",  # TODO: Your Battlesnake Username
-            "color": "#888888",  # TODO: Personalize
-            "head": "default",  # TODO: Personalize
+            "author": "antimatter543",  # TODO: Your Battlesnake Username
+            "color": "#930318",  # TODO: Personalize
+            "head": "sand-worm",  # TODO: Personalize
             "tail": "default",  # TODO: Personalize
         }
 
@@ -34,20 +32,57 @@ class Battlesnake(object):
         print("START")
         return "ok"
 
+
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def move(self):
         # This function is called on every turn of a game. It's how your snake decides where to move.
         # Valid moves are "up", "down", "left", or "right".
-        # TODO: Use the information in cherrypy.request.json to decide your next move.
         data = cherrypy.request.json
+        
+        #### Snake Variables ####
+        head =data['you']['head']
+        neck = data['you']['body'][1]
 
-        # Choose a random direction to move in
+		# foods = data['board']['food'] # [{x: ., y: .,}, ...]
+
+        head_pos = (head['x'], head['y']) #(x,y)
+        neck_pos = (neck['x'], neck['y'])
+        print('head', head_pos)
+        print('neck', neck_pos)
+
+        #### Set up ####
         possible_moves = ["up", "down", "left", "right"]
-        move = random.choice(possible_moves)
+        board = data['board']
+        tick = data['turn']
 
-        print(f"MOVE: {move}")
+        ### Debugging
+        print("It's tick", tick)
+        print("DATA", data)
+
+        
+        ## Logic ##
+        
+        # Stop from going off board by removing that move from the action space. Also stops snake from going into itself.
+        for move in possible_moves: 
+            potential_move = move_to_coord(move, head_pos) # (x,y)
+            print("This is the move and potential move from the logic area", move, potential_move)
+            if not (offBoard(board, potential_move) or equal_coords(potential_move, neck_pos)):
+                print("We're moving here!", move)
+                return {"move": move}
+
+                print("I'm removing this move", move) # Removing this actually causes the list to shuffle back one, so it ends up skipping over a possible move. Which ends up making it kill itself.
+                possible_moves.remove(move)
+                
+        # Choose a random direction to move in
+
+        # print("TESTING", data['game']['id'])
+
+
+        ## Decide move 
+        move = random.choice(possible_moves)
+        print("This is the final print statement before the next tick. I'll see you in the future, present me!")
         return {"move": move}
 
     @cherrypy.expose
@@ -69,3 +104,4 @@ if __name__ == "__main__":
     )
     print("Starting Battlesnake Server...")
     cherrypy.quickstart(server)
+

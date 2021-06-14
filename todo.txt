@@ -1,0 +1,9 @@
+1. GetSafeMoves function -> This is good not only for checking wall collisions, etc. but also enemy body collisions (and your own).
+
+For efficiency of code, we can code the collisions to work like this:
+Function: 2. Get_adjacent_tiles(position): (4 adjacent tiles of a position). (+ the direction you'd have to go to get there?)
+Then, in getsafe: Get adjacent tiles, then check if there's any body type entities in there (based on what move you'd make). If there is an entity, remove it from safemoves. 
+Also remove anything over the world border limit from safemoves.
+
+Then return the safemoves (i.e the directions).
+3. GetNextMove function (it's like a better)
